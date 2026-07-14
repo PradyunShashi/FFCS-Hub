@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<table border="1" cellpadding="8" id="tt">
+  <thead>
+    <tr>
+      <th>DAY</th>
+      <th>8:00<br>8:50</th>
+      <th>9:00<br>9:50</th>
+      <th>10:00<br>10:50</th>
+      <th>11:00<br>11:50</th>
+      <th>12:00<br>12:50</th>
+      <th>LUNCH</th>
+      <th>2:00<br>2:50</th>
+      <th>3:00<br>3:50</th>
+      <th>4:00<br>4:50</th>
+      <th>5:00<br>5:50</th>
+      <th>6:00<br>6:50</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="2">MON</td>
+      <td data-slot="A1">A1</td><td data-slot="F1">F1</td><td data-slot="D1">D1</td><td data-slot="TB1">TB1</td><td data-slot="TG1">TG1</td>
+      <td rowspan="2">LUNCH</td>
+      <td data-slot="A2">A2</td><td data-slot="F2">F2</td><td data-slot="D2">D2</td><td data-slot="TB2">TB2</td><td data-slot="TG2">TG2</td>
+    </tr>
+    <tr>
+      <td data-slot="L1,L2" colspan="2">L1+L2</td><td data-slot="L3,L4" colspan="2">L3+L4</td><td data-slot="L5,L6" colspan="1">L5+L6</td>
+      <td data-slot="L31,L32" colspan="2">L31+L32</td><td data-slot="L33,L34" colspan="2">L33+L34</td><td data-slot="L35,L36" colspan="1">L35+L36</td>
+    </tr>
+
+    <tr>
+      <td rowspan="2">TUE</td>
+      <td data-slot="B1">B1</td><td data-slot="G1">G1</td><td data-slot="E1">E1</td><td data-slot="TC1">TC1</td><td data-slot="TAA1">TAA1</td>
+      <td rowspan="2">LUNCH</td>
+      <td data-slot="B2">B2</td><td data-slot="G2">G2</td><td data-slot="E2">E2</td><td data-slot="TC2">TC2</td><td data-slot="TAA2">TAA2</td>
+    </tr>
+    <tr>
+      <td data-slot="L7,L8" colspan="2">L7+L8</td><td data-slot="L9,L10" colspan="2">L9+L10</td><td data-slot="L11,L12" colspan="1">L11+L12</td>
+      <td data-slot="L37,L38" colspan="2">L37+L38</td><td data-slot="L39,L40" colspan="2">L39+L40</td><td data-slot="L41,L42" colspan="1">L41+L42</td>
+    </tr>
+
+    <tr>
+      <td rowspan="2">WED</td>
+      <td data-slot="C1">C1</td><td data-slot="A1">A1</td><td data-slot="F1">F1</td><td data-slot="V1">V1</td><td data-slot="V2">V2</td>
+      <td rowspan="2">LUNCH</td>
+      <td data-slot="C2">C2</td><td data-slot="A2">A2</td><td data-slot="F2">F2</td><td data-slot="TD2">TD2</td><td data-slot="TBB2">TBB2</td>
+    </tr>
+    <tr>
+      <td data-slot="L13,L14" colspan="2">L13+L14</td><td data-slot="L15,L16" colspan="2">L15+L16</td><td data-slot="L17,L18" colspan="1">L17+L18</td>
+      <td data-slot="L43,L44" colspan="2">L43+L44</td><td data-slot="L45,L46" colspan="2">L45+L46</td><td data-slot="L47,L48" colspan="1">L47+L48</td>
+    </tr>
+
+    <tr>
+      <td rowspan="2">THU</td>
+      <td data-slot="D1">D1</td><td data-slot="B1">B1</td><td data-slot="G1">G1</td><td data-slot="TE1">TE1</td><td data-slot="TCC1">TCC1</td>
+      <td rowspan="2">LUNCH</td>
+      <td data-slot="D2">D2</td><td data-slot="B2">B2</td><td data-slot="G2">G2</td><td data-slot="TE2">TE2</td><td data-slot="TCC2">TCC2</td>
+    </tr>
+    <tr>
+      <td data-slot="L19,L20" colspan="2">L19+L20</td><td data-slot="L21,L22" colspan="2">L21+L22</td><td data-slot="L23,L24" colspan="1">L23+L24</td>
+      <td data-slot="L49,L50" colspan="2">L49+L50</td><td data-slot="L51,L52" colspan="2">L51+L52</td><td data-slot="L53,L54" colspan="1">L53+L54</td>
+    </tr>
+
+    <tr>
+      <td rowspan="2">FRI</td>
+      <td data-slot="E1">E1</td><td data-slot="C1">C1</td><td data-slot="TA1">TA1</td><td data-slot="TF1">TF1</td><td data-slot="TD1">TD1</td>
+      <td rowspan="2">LUNCH</td>
+      <td data-slot="E2">E2</td><td data-slot="C2">C2</td><td data-slot="TA2">TA2</td><td data-slot="TF2">TF2</td><td data-slot="TDD2">TDD2</td>
+    </tr>
+    <tr>
+      <td data-slot="L25,L26" colspan="2">L25+L26</td><td data-slot="L27,L28" colspan="2">L27+L28</td><td data-slot="L29,L30" colspan="1">L29+L30</td>
+      <td data-slot="L55,L56" colspan="2">L55+L56</td><td data-slot="L57,L58" colspan="2">L57+L58</td><td data-slot="L59,L60" colspan="1">L59+L60</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="selector-card">
+  <div id = "auto-mode" style = "display:block">
+  <select id="school-select">
+    <option value="">-- Select School --</option>
+    <option value="SCOPE">SCOPE</option>
+    <option value="SENSE">SENSE</option>
+    <option value="SCORE">SCORE</option>
+  </select>
+  <select id="subject-select">
+    <option value="">-- Select Subject --</option>
+  </select>
+  </div>
+  <div id = "manual-mode" style = "display:none">
+    <select id = "subject-type">
+      <option value ="">Select subject type</option>
+      <option value = "Theory">Theory</option>
+      <option value = "Lab">Lab</option>
+      <option value = "Theory+Lab">Theory+Lab</option>
+    </select>
+    <div id = "text-box-printer"></div>
+  </div>
+  <button id = "add-subject">Add Subject</button>
+  <label><input type = "checkbox" id = "manual-button">Manual Input</input></label>
+</div>
+<div id = "faculty-printer"></div>
+<button id = "generate">Generate combos</button>
+
+<div id="selected-subjects"></div>
+
+
+<div id="results"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
