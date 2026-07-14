@@ -194,6 +194,36 @@ document.getElementById("subject-select").addEventListener("change", async (e) =
 
 //ADDS subject button
 document.getElementById("add-subject").addEventListener("click",() =>{
+
+    const manualchecker = document.getElementById("manual-button")
+
+    if(manualchecker.checked===true)
+    {
+        const subtype = document.getElementById("subject-type").value;
+
+        if(subtype==="Theory"||subtype==="Lab"){
+            const theorytext = document.getElementById("theory").value;
+            if(!theorytext){
+                alert("No faculties entered.");
+                return;
+            }
+            console.log(theorytext);
+        }
+        
+        if(subtype ==="Theory+Lab"){
+            const theorytext = document.getElementById("theory").value;
+            const labtext = document.getElementById("theory+lab").value;
+            if(!theorytext||!labtext){
+                alert("No faculty entered in one of the boxes.");
+                return;
+            }
+            console.log(theorytext);
+            console.log(labtext);
+        }
+
+        return;
+    }
+
     const code = document.getElementById("subject-select").value;
     if(!code) return;
     const facArray = loadedData[school][code].faculty;
@@ -351,13 +381,13 @@ document.getElementById("subject-type").addEventListener("change", async(e)=>{
     if(!e.target.value) container.innerHTML =``;
     if(e.target.value === "Theory"||e.target.value === "Lab"){
         container.innerHTML=`
-        <input type = "text"></input>
+        <input type = "text" id = "theory"></input>
         `;
     }
     if(e.target.value==="Theory+Lab"){
         container.innerHTML=`
-        <input type = "text"></input>
-        <input type = "text"></input>
+        <input type = "text" id = "theory"></input>
+        <input type = "text" id = "theory+lab"></input>
         `;
     }
 });
