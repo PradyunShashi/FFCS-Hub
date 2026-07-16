@@ -200,28 +200,42 @@ document.getElementById("add-subject").addEventListener("click",() =>{
     if(manualchecker.checked===true)
     {
         const subtype = document.getElementById("subject-type").value;
-
+        const subname = document.getElementById("manual-sub-name").value;
+        if(!subname){alert("Enter subject name");return;}
+        let facultyList = [];
         if(subtype==="Theory"||subtype==="Lab"){
             const theorytext = document.getElementById("theory").value;
-            if(!theorytext){
-                alert("No faculties entered.");
-                return;
-            }
+            if(!theorytext){alert("No faculties entered.");return;}
             console.log(theorytext);
+            facultyList = parseFacultyBlock(theorytext);
+            console.log(facultyList);
+        }
+
+        if (subtype === "Theory") {
+            const seen = {};
+            for (const fac of facultyList) {
+                const key = fac.slots.join("+");
+                if (!seen[key]) seen[key] = { name: `Any ${key} faculty`, slots: fac.slots };
+            }
+            facultyList = Object.values(seen);
         }
         
         if(subtype ==="Theory+Lab"){
             const theorytext = document.getElementById("theory").value;
             const labtext = document.getElementById("theory+lab").value;
-            if(!theorytext||!labtext){
-                alert("No faculty entered in one of the boxes.");
-                return;
-            }
-            console.log(theorytext);
-            console.log(labtext);
+            if(!theorytext||!labtext){alert("No faculty entered in one of the boxes.");return;}
+            facultyList = mergeTheoryLab(parseFacultyBlock(theorytext),parseFacultyBlock(labtext));
         }
+        for(const sub of subFac)
+        {
+            if(sub.name===subname){alert("subject already added.");return;}
+        }
+        subFac.push({subject:subname,faculty:facultyList});
+        console.log(subFac);
+        renderSelectedSubjects();
 
         return;
+
     }
 
     const code = document.getElementById("subject-select").value;
@@ -371,7 +385,6 @@ function deleteSubject(idx) {
 
 //manual input panel display
 document.getElementById("manual-button").addEventListener("change",(e)=>{
-    console.log("checked:", e.target.checked);
     document.getElementById("auto-mode").style.display = e.target.checked?"none":"block";
     document.getElementById("manual-mode").style.display = e.target.checked?"block":"none";
 });
@@ -381,13 +394,67 @@ document.getElementById("subject-type").addEventListener("change", async(e)=>{
     if(!e.target.value) container.innerHTML =``;
     if(e.target.value === "Theory"||e.target.value === "Lab"){
         container.innerHTML=`
-        <input type = "text" id = "theory"></input>
+        <textarea rows = "10" cols = "60" id = "theory"></textarea>
         `;
     }
     if(e.target.value==="Theory+Lab"){
         container.innerHTML=`
-        <input type = "text" id = "theory"></input>
-        <input type = "text" id = "theory+lab"></input>
+        <textarea rows = "10" cols = "60" id = "theory"></textarea>
+        <textarea rows = "10" cols = "60" id = "theory+lab"></textarea>
         `;
     }
 });
+
+//functions to handle raw text
+
+function parseFacultyBlock(raw) {
+    const entries = [];
+    for (const line of raw.trim().split("\n")) {
+        const parts = line.trim().split(/\s{2,}/);
+        console.log(parts)
+        if (parts.length < 3) continue;
+        const slots = parts[0].split("+");
+        const room = parts[1].trim();
+        const name = parts[2].trim();
+        entries.push({ name, slots, theory_room: room, lab_room: null });
+    }
+    return entries;
+}
+
+function getSession(slot) {
+    if (slot.startsWith("L")) return parseInt(slot.slice(1)) <= 30 ? "morning" : "evening";
+    return slot.endsWith("1") ? "morning" : "evening";
+}
+
+function mergeTheoryLab(theoryList, labList) {
+    const merged = [];
+    const usedLab = new Set();
+
+    for (const t of theoryList) {
+        const tSession = getSession(t.slots[0]);
+        let match = null;
+
+        for (let i = 0; i < labList.length; i++) {
+            if (usedLab.has(i)) continue;
+            const lSession = getSession(labList[i].slots[0]);
+            if (labList[i].name === t.name && tSession !== lSession) {
+                match = { idx: i, entry: labList[i] };
+                break;
+            }
+        }
+
+        if (!match) {
+            console.warn(`No valid lab match for ${t.name}`);
+            continue;
+        }
+
+        usedLab.add(match.idx);
+        merged.push({
+            name: t.name,
+            slots: [...t.slots, ...match.entry.slots],
+            theory_room: t.theory_room,
+            lab_room: match.entry.theory_room
+        });
+    }
+    return merged;
+}
