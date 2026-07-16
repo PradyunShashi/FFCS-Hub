@@ -131,7 +131,6 @@ document.getElementById("tt").addEventListener("click", (e) => {
             });
             constraint.push(sl);
         }
-
     }
     for (const sub of Object.keys(sub_slots)) {
         for(const cons of constraint){
@@ -143,7 +142,7 @@ document.getElementById("tt").addEventListener("click", (e) => {
                     });
                 }
             }}
-    console.log(constraint);
+    renderSelectedSubjects();
 });
 
 //Selection of school
@@ -155,15 +154,6 @@ document.getElementById("school-select").addEventListener("change", async (e) =>
 
     const res = await fetch(schoolFiles[school]);
     const data = await res.json();
-    console.log(
-    "Loaded file:",
-    schoolFiles[school]
-);
-
-console.log(
-    data["BCSE202E - Data Structures and Algorithms"]
-        .faculty[0]
-);
     loadedData[school] = data;
 
     populateSubjectDropdown(data);
@@ -193,7 +183,6 @@ document.getElementById("subject-select").addEventListener("change", async (e) =
     let html = `<button id = select-all>Select All</button><br>`;
 
     facArray.forEach((fac,idx)=>{
-        console.log(fac)
         html += `<label><input type = checkbox value = "${idx}"> ${fac.name}</label><br>`;
     });
     facprint.innerHTML = html;
@@ -205,40 +194,62 @@ document.getElementById("subject-select").addEventListener("change", async (e) =
 
 //ADDS subject button
 document.getElementById("add-subject").addEventListener("click",() =>{
+
+    const manualchecker = document.getElementById("manual-button")
+
+    if(manualchecker.checked===true)
+    {
+        const subtype = document.getElementById("subject-type").value;
+        const subname = document.getElementById("manual-sub-name").value;
+        if(!subname){alert("Enter subject name");return;}
+        let facultyList = [];
+        if(subtype==="Theory"||subtype==="Lab"){
+            const theorytext = document.getElementById("theory").value;
+            if(!theorytext){alert("No faculties entered.");return;}
+            console.log(theorytext);
+            facultyList = parseFacultyBlock(theorytext);
+            console.log(facultyList);
+        }
+
+        if (subtype === "Theory") {
+            const seen = {};
+            for (const fac of facultyList) {
+                const key = fac.slots.join("+");
+                if (!seen[key]) seen[key] = { name: `Any ${key} faculty`, slots: fac.slots };
+            }
+            facultyList = Object.values(seen);
+        }
+        
+        if(subtype ==="Theory+Lab"){
+            const theorytext = document.getElementById("theory").value;
+            const labtext = document.getElementById("theory+lab").value;
+            if(!theorytext||!labtext){alert("No faculty entered in one of the boxes.");return;}
+            facultyList = mergeTheoryLab(parseFacultyBlock(theorytext),parseFacultyBlock(labtext));
+        }
+        for(const sub of subFac)
+        {
+            if(sub.name===subname){alert("subject already added.");return;}
+        }
+        subFac.push({subject:subname,faculty:facultyList});
+        console.log(subFac);
+        renderSelectedSubjects();
+
+        return;
+
+    }
+
     const code = document.getElementById("subject-select").value;
     if(!code) return;
     const facArray = loadedData[school][code].faculty;
 
-console.log("Constraints:", constraint.map(x => `"${x}"`));
 
-for (const fac of facArray) {
-    console.log(
-        fac.name,
-        fac.slots,
-        fac.slots.every(slot => constraint.includes(slot))
-    );
-
-    for (const slot of fac.slots) {
-        console.log(
-            `Checking "${slot}" ->`,
-            constraint.includes(slot)
-        );
-    }
-}
     let chosenFac = Array.from(
-        document.querySelectorAll("#faculty-printer input[type='checkbox']:checked")).map(cb => facArray[cb.value]).filter(fac => fac.slots.every(slot => constraint.includes(slot)));
-        console.log("Current constraints:", constraint);
+        document.querySelectorAll("#faculty-printer input[type='checkbox']:checked")).map(cb => facArray[cb.value]);
 
-for (const fac of facArray) {
-    console.log(
-        fac.name,
-        fac.slots,
-        fac.slots.every(slot => constraint.includes(slot))
-    );
-}
-        if (chosenFac.length === 0) {
-        alert("No valid faculty for this subject given your current constraints.");
+    if (chosenFac.length === 0) {
+        alert("No faculty have been chosen");
         return;
+        console.log(chosenFac);
     }
     if (loadedData[school][code].sub_type === "theory") {
     const seen = {};
@@ -250,7 +261,6 @@ for (const fac of facArray) {
     }
     chosenFac = Object.values(seen);
     }
-    console.log(chosenFac);
 
     if (subFac.some(s => s.subject === code)) {
     alert("Subject already added.");
@@ -268,14 +278,16 @@ document.getElementById("generate").addEventListener("click", () => {
         return;
     }
 
-    const results = solvePnc(0, [], []);
+    const filt = filterSubFac();
+    const filtered = slimFilter(filt);
+
+    const results = solvePnc(0, [], [],filtered);
 
     if (results.length === 0) {
         alert("No valid timetable possible.");
         return;
     }
 
-    console.log(results);
     renderResults(results);
 });
 
@@ -310,14 +322,14 @@ function renderResults(results) {
 //SOLVER 
 
 
-function solvePnc(subIdx, currentSchedule, currentOccupied) {
-    if (subIdx === subFac.length) {
+function solvePnc(subIdx, currentSchedule, currentOccupied, filtered) {
+    if (subIdx === filtered.length) {
         return [currentSchedule];
     }
 
     const allValid = [];
 
-    for (const fac of subFac[subIdx].faculty) {
+    for (const fac of filtered[subIdx].faculty) {
         let hasClash = false;
 
         for (const newSlot of fac.slots) {
@@ -334,11 +346,12 @@ function solvePnc(subIdx, currentSchedule, currentOccupied) {
             const res = solvePnc(
                 subIdx + 1,
                 [...currentSchedule, { subject: subFac[subIdx].subject, fac: fac }],
-                [...currentOccupied, ...fac.slots]
+                [...currentOccupied, ...fac.slots],
+                filtered
             );
             allValid.push(...res);
 
-            if (allValid.length >= 50) return allValid;
+            if (allValid.length >= 1000) return allValid;
         }
     }
 
@@ -350,14 +363,18 @@ function renderSelectedSubjects() {
     const container = document.getElementById("selected-subjects");
     container.innerHTML = "";
 
-    subFac.forEach((sub, idx) => {
+    const filtered = filterSubFac();
+
+    filtered.forEach((sub, idx) => {
+        const facList = sub.faculty.map(fac => 
+            `<p>${fac.name} — ${fac.slots.join("+")}</p>`
+        ).join("");
+
         container.innerHTML += `
             <div class="selected-subject-card">
                 <h4>${sub.subject}</h4>
-                <p>${sub.faculty.length} faculty options</p>
-                <button onclick="deleteSubject(${idx})">
-                    Delete
-                </button>
+                ${facList}
+                <button onclick="deleteSubject(${idx})">Delete</button>
             </div>
         `;
     });
@@ -369,4 +386,115 @@ function deleteSubject(idx) {
     renderSelectedSubjects();
 }
 
+//manual inputs handlers here
 
+//manual input panel display
+document.getElementById("manual-button").addEventListener("change",(e)=>{
+    document.getElementById("auto-mode").style.display = e.target.checked?"none":"block";
+    document.getElementById("manual-mode").style.display = e.target.checked?"block":"none";
+});
+
+document.getElementById("subject-type").addEventListener("change", async(e)=>{
+    const container = document.getElementById("text-box-printer");
+    if(!e.target.value) container.innerHTML =``;
+    if(e.target.value === "Theory"||e.target.value === "Lab"){
+        container.innerHTML=`
+        <textarea rows = "10" cols = "60" id = "theory"></textarea>
+        `;
+    }
+    if(e.target.value==="Theory+Lab"){
+        container.innerHTML=`
+        <textarea rows = "10" cols = "60" id = "theory"></textarea>
+        <textarea rows = "10" cols = "60" id = "theory+lab"></textarea>
+        `;
+    }
+});
+
+//functions to handle raw text
+
+function parseFacultyBlock(raw) {
+    const entries = [];
+    for (const line of raw.trim().split("\n")) {
+        const parts = line.trim().split(/\s{2,}/);
+        console.log(parts)
+        if (parts.length < 3) continue;
+        const slots = parts[0].split("+");
+        const room = parts[1].trim();
+        const name = parts[2].trim();
+        entries.push({ name, slots, theory_room: room, lab_room: null });
+    }
+    return entries;
+}
+
+function getSession(slot) {
+    if (slot.startsWith("L")) return parseInt(slot.slice(1)) <= 30 ? "morning" : "evening";
+    return slot.endsWith("1") ? "morning" : "evening";
+}
+
+function mergeTheoryLab(theoryList, labList) {
+    const merged = [];
+    const usedLab = new Set();
+
+    for (const t of theoryList) {
+        const tSession = getSession(t.slots[0]);
+        let match = null;
+
+        for (let i = 0; i < labList.length; i++) {
+            if (usedLab.has(i)) continue;
+            const lSession = getSession(labList[i].slots[0]);
+            if (labList[i].name === t.name && tSession !== lSession) {
+                match = { idx: i, entry: labList[i] };
+                break;
+            }
+        }
+
+        if (!match) {
+            console.warn(`No valid lab match for ${t.name}`);
+            continue;
+        }
+
+        usedLab.add(match.idx);
+        merged.push({
+            name: t.name,
+            slots: [...t.slots, ...match.entry.slots],
+            theory_room: t.theory_room,
+            lab_room: match.entry.theory_room
+        });
+    }
+    return merged;
+}
+
+//filters the faculty
+
+function filterSubFac() {
+    return subFac.map(sub => ({
+        ...sub,
+        faculty: sub.faculty.filter(fac =>
+            fac.slots.every(slot => constraint.includes(slot))
+        )
+    }));
+}
+
+function slimFilter(filtered) {
+    for (const sub of filtered) {
+
+        const groups = {};
+
+        for (const fac of sub.faculty) {
+
+            const key = fac.slots.join("+");
+
+            if (!groups[key]) {
+                groups[key] = {
+                    ...fac
+                };
+            } else {
+                groups[key].name += " / " + fac.name;
+            }
+        }
+
+        sub.faculty = Object.values(groups);
+    }
+
+    return filtered;
+}

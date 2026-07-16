@@ -83,17 +83,29 @@
 </table>
 
 <div class="selector-card">
+  <div id = "auto-mode" style = "display:block">
   <select id="school-select">
     <option value="">-- Select School --</option>
     <option value="SCOPE">SCOPE</option>
     <option value="SENSE">SENSE</option>
     <option value="SCORE">SCORE</option>
   </select>
-
   <select id="subject-select">
     <option value="">-- Select Subject --</option>
   </select>
+  </div>
+  <div id = "manual-mode" style = "display:none">
+    <select id = "subject-type">
+      <option value ="">Select subject type</option>
+      <option value = "Theory">Theory</option>
+      <option value = "Lab">Lab</option>
+      <option value = "Theory+Lab">Theory+Lab</option>
+    </select>
+    <input type = "text" id = "manual-sub-name" placeholder = "Enter subject name">
+    <div id = "text-box-printer"></div>
+  </div>
   <button id = "add-subject">Add Subject</button>
+  <label><input type = "checkbox" id = "manual-button">Manual Input</input></label>
 </div>
 <div id = "faculty-printer"></div>
 <button id = "generate">Generate combos</button>
