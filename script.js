@@ -131,7 +131,6 @@ document.getElementById("tt").addEventListener("click", (e) => {
             });
             constraint.push(sl);
         }
-
     }
     for (const sub of Object.keys(sub_slots)) {
         for(const cons of constraint){
@@ -143,6 +142,7 @@ document.getElementById("tt").addEventListener("click", (e) => {
                     });
                 }
             }}
+    renderSelectedSubjects();
 });
 
 //Selection of school
@@ -243,12 +243,11 @@ document.getElementById("add-subject").addEventListener("click",() =>{
     const facArray = loadedData[school][code].faculty;
 
 
-
     let chosenFac = Array.from(
-        document.querySelectorAll("#faculty-printer input[type='checkbox']:checked")).map(cb => facArray[cb.value]).filter(fac => fac.slots.every(slot => constraint.includes(slot)));
+        document.querySelectorAll("#faculty-printer input[type='checkbox']:checked")).map(cb => facArray[cb.value]);
 
-        if (chosenFac.length === 0) {
-        alert("No valid faculty for this subject given your current constraints.");
+    if (chosenFac.length === 0) {
+        alert("No faculty have been chosen");
         return;
         console.log(chosenFac);
     }
@@ -279,7 +278,9 @@ document.getElementById("generate").addEventListener("click", () => {
         return;
     }
 
-    const results = solvePnc(0, [], []);
+    const filtered = filterSubFac();
+
+    const results = solvePnc(0, [], [],filtered);
 
     if (results.length === 0) {
         alert("No valid timetable possible.");
@@ -320,14 +321,14 @@ function renderResults(results) {
 //SOLVER 
 
 
-function solvePnc(subIdx, currentSchedule, currentOccupied) {
-    if (subIdx === subFac.length) {
+function solvePnc(subIdx, currentSchedule, currentOccupied, filtered) {
+    if (subIdx === filtered.length) {
         return [currentSchedule];
     }
 
     const allValid = [];
 
-    for (const fac of subFac[subIdx].faculty) {
+    for (const fac of filtered[subIdx].faculty) {
         let hasClash = false;
 
         for (const newSlot of fac.slots) {
@@ -344,7 +345,8 @@ function solvePnc(subIdx, currentSchedule, currentOccupied) {
             const res = solvePnc(
                 subIdx + 1,
                 [...currentSchedule, { subject: subFac[subIdx].subject, fac: fac }],
-                [...currentOccupied, ...fac.slots]
+                [...currentOccupied, ...fac.slots],
+                filtered
             );
             allValid.push(...res);
 
@@ -360,7 +362,9 @@ function renderSelectedSubjects() {
     const container = document.getElementById("selected-subjects");
     container.innerHTML = "";
 
-    subFac.forEach((sub, idx) => {
+    const filtered = filterSubFac();
+
+    filtered.forEach((sub, idx) => {
         const facList = sub.faculty.map(fac => 
             `<p>${fac.name} — ${fac.slots.join("+")}</p>`
         ).join("");
@@ -457,4 +461,15 @@ function mergeTheoryLab(theoryList, labList) {
         });
     }
     return merged;
+}
+
+//filters the faculty
+
+function filterSubFac() {
+    return subFac.map(sub => ({
+        ...sub,
+        faculty: sub.faculty.filter(fac =>
+            fac.slots.every(slot => constraint.includes(slot))
+        )
+    }));
 }
