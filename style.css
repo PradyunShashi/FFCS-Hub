@@ -46,3 +46,21 @@
     padding: 15px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
+
+.suggestions-box {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    z-index: 10;
+    width: 100%;
+}
+.suggestion-item {
+    padding: 6px 10px;
+    cursor: pointer;
+}
+.suggestion-item:hover {
+    background: #eee;
+}

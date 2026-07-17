@@ -90,9 +90,10 @@
     <option value="SENSE">SENSE</option>
     <option value="SCORE">SCORE</option>
   </select>
-  <select id="subject-select">
-    <option value="">-- Select Subject --</option>
-  </select>
+  <div id="subject-select-wrapper" style="position:relative;display:inline-block">
+    <input type="text" id="subject-search" placeholder="Search subject..." autocomplete="off">
+    <div id="subject-suggestions" class="suggestions-box"></div>
+  </div>
   </div>
   <div id = "manual-mode" style = "display:none">
     <select id = "subject-type">
