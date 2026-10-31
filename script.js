@@ -25,6 +25,8 @@ const sub_slots = {
     "TG1": [["MON", 1200, 1250]],
     "TAA1":[["TUE", 1200, 1250]],
     "TCC1":[["THU", 1200, 1250]],
+    "V1": [["WED", 1100, 1150]],
+    "V2": [["WED", 1200, 1250]],
 
     // Evening
     "A2":  [["MON", 1400, 1450], ["WED", 1500, 1550]],
@@ -113,21 +115,25 @@ document.getElementById("tt").addEventListener("click", (e) => {
     for (const sl of codes) {
         if (constraint.includes(sl)) {
             getCellsForCode(sl).forEach(c => {
-                c.style.backgroundColor = "white";
+                c.style.backgroundColor = "#0F1A1D "; //same background color as body when deselecting
+                c.style.color = "#EDEBE4";
             });
             for (const sub of Object.keys(sub_slots)) {
                 if (sub == sl) continue;
                 if (isClash(sub, sl)) {
                     getCellsForCode(sub).forEach(c => {
                         c.classList.remove("disabled");
-                        c.style.backgroundColor = "white";
+                        c.classList.remove("selected");
+                        c.style.backgroundColor = "#0F1A1D"; //same background color as body when deselecting and removing disabled
                     });
                 }
             }
             constraint.splice(constraint.indexOf(sl), 1);
         } else {
             getCellsForCode(sl).forEach(c => {
-                c.style.backgroundColor = "green";
+                c.style.backgroundColor = "#f1aa03"; //color when cell is selected
+                c.style.color = "#0F1A1D";
+                c.classList.add("selected")
             });
             constraint.push(sl);
         }
@@ -138,7 +144,8 @@ document.getElementById("tt").addEventListener("click", (e) => {
                 if (isClash(sub, cons)) {
                     getCellsForCode(sub).forEach(c => {
                         c.classList.add("disabled");
-                        c.style.backgroundColor = "gray";
+                        c.classList.remove("selected")
+                        c.style.backgroundColor = "#3A3934"; //color of cell when it is disabled
                     });
                 }
             }}
@@ -148,6 +155,8 @@ document.getElementById("tt").addEventListener("click", (e) => {
 //Selection of school
 let loadedData = {};
 let school = null;
+let selectedSubjectCode = null;
+
 document.getElementById("school-select").addEventListener("change", async (e) => {
     school = e.target.value;
     if (!school) return;
@@ -156,41 +165,71 @@ document.getElementById("school-select").addEventListener("change", async (e) =>
     const data = await res.json();
     loadedData[school] = data;
 
-    populateSubjectDropdown(data);
+    setupSubjectAutocomplete(data);
 });
 
-//Prints subjects in the dropdown box
-function populateSubjectDropdown(data) {
-    const subjectSelect = document.getElementById("subject-select");
-    subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+//subject-dropdown-cum-searchbar
 
-    for (const code of Object.keys(data)) {
-        const opt = document.createElement("option");
-        opt.value = code;
-        opt.textContent = `${code}`;
-        subjectSelect.appendChild(opt);
-    }
+function setupSubjectAutocomplete(data) {
+    const input = document.getElementById("subject-search");
+    const suggestionsBox = document.getElementById("subject-suggestions");
+    const allCodes = Object.keys(data);
+
+    input.value = "";
+    selectedSubjectCode = null;
+
+    input.oninput = () => {
+        const query = input.value.trim().toLowerCase();
+        selectedSubjectCode = null;
+        suggestionsBox.innerHTML = "";
+
+        const matches = query
+            ? allCodes.filter(code => code.toLowerCase().includes(query)).slice(0, 30)
+            : allCodes.slice(0, 30);
+
+        if (matches.length === 0) {
+            suggestionsBox.style.display = "none";
+            return;
+        }
+
+        matches.forEach(code => {
+            const item = document.createElement("div");
+            item.className = "suggestion-item";
+            item.textContent = code;
+            item.addEventListener("click", () => {
+                input.value = code;
+                selectedSubjectCode = code;
+                suggestionsBox.innerHTML = "";
+                suggestionsBox.style.display = "none";
+                onSubjectChosen(code);
+            });
+            suggestionsBox.appendChild(item);
+        });
+
+        suggestionsBox.style.display = "block";
+    };
+
+    input.onfocus = () => input.dispatchEvent(new Event("input"));
+
+    document.addEventListener("click", (e) => {
+        if (e.target !== input) suggestionsBox.style.display = "none";
+    });
 }
 
-//printing the faculty list
-document.getElementById("subject-select").addEventListener("change", async (e) => {
-    const code = e.target.value;
-    if (!code) return;
-
+function onSubjectChosen(code) {
     const facprint = document.getElementById("faculty-printer");
     const facArray = loadedData[school][code].faculty;
 
-    let html = `<button id = select-all>Select All</button><br>`;
-
-    facArray.forEach((fac,idx)=>{
-        html += `<label><input type = checkbox value = "${idx}"> ${fac.name}</label><br>`;
+    let html = `<button id="select-all">Select All</button><br>`;
+    facArray.forEach((fac, idx) => {
+        html += `<label><input type="checkbox" value="${idx}"> ${fac.name}</label><br>`;
     });
     facprint.innerHTML = html;
 
-    document.getElementById("select-all").addEventListener("click", () =>{
-        document.querySelectorAll("#faculty-printer input[type= 'checkbox']").forEach(cb=>cb.checked=true);
+    document.getElementById("select-all").addEventListener("click", () => {
+        document.querySelectorAll("#faculty-printer input[type='checkbox']").forEach(cb => cb.checked = true);
     });
-});
+}
 
 //ADDS subject button
 document.getElementById("add-subject").addEventListener("click",() =>{
@@ -238,7 +277,7 @@ document.getElementById("add-subject").addEventListener("click",() =>{
 
     }
 
-    const code = document.getElementById("subject-select").value;
+    const code = selectedSubjectCode;
     if(!code) return;
     const facArray = loadedData[school][code].faculty;
 
@@ -267,6 +306,9 @@ document.getElementById("add-subject").addEventListener("click",() =>{
     return;
     }
     subFac.push({ subject: code, faculty: chosenFac });
+    document.getElementById("subject-search").value = "";
+    selectedSubjectCode = null;
+    
     renderSelectedSubjects();
 });
 
@@ -278,8 +320,9 @@ document.getElementById("generate").addEventListener("click", () => {
         return;
     }
 
-    const filt = filterSubFac();
-    const filtered = slimFilter(filt);
+    let filtered = filterSubFac();
+    if(document.getElementById("condensed-button").checked===true)
+    filtered = slimFilter(filtered);
 
     const results = solvePnc(0, [], [],filtered);
 
@@ -498,3 +541,8 @@ function slimFilter(filtered) {
 
     return filtered;
 }
+
+//rerun generate after clicking clicking condense
+document.getElementById("condensed-button").addEventListener("change",(e)=>{
+    document.getElementById("generate").click();
+})

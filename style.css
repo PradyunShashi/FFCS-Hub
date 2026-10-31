@@ -1,20 +1,26 @@
 .selector-card {
-  border: 1px solid #ccc;
+  border: 1px solid #474843;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  display: flex;
   gap: 12px;
-  max-width: 300px;
-
+  width: 500px;
+  margin: 20px auto;
+  background: #0F1A1D;
+  display: block;
 }
 
-#faculty-printer{
-  border: 1px solid black;
+#add-subject {
+  position: static;
+  display: block;
+  margin-top: 15px;
+}
+
+#faculty-printer {
+  border: 1px solid #474843;
   border-radius: 12px;
-  width: 50px;
-  height: 50px;
-  display:flex;
+  width: 300px;
+  height: 300px;
+  overflow-y: scroll;
 }
 
 #results{
@@ -25,11 +31,12 @@
 }
 
 .result-card{
-    border:1px solid #ccc;
+    border:1px solid #474843;
     border-radius:12px;
     padding:20px;
     width:350px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    box-shadow:none;
+    background: #0F1A1D;
 }
 
 #selected-subjects {
@@ -41,8 +48,65 @@
 
 .selected-subject-card {
     width: 250px;
-    border: 1px solid #ccc;
+    border: 1px solid #474843;
     border-radius: 12px;
     padding: 15px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: none;
+    background: #0F1A1D;
+}
+
+.suggestions-box {
+    position: absolute;
+    background: #16201f;
+    border: 1px solid #474843;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    z-index: 10;
+    width: 100%;
+    color: #EDEBE4;
+}
+.suggestion-item {
+    padding: 6px 10px;
+    cursor: pointer;
+}
+.suggestion-item:hover {
+    background: #f4c25f;
+    color: #0F1A1D;
+}
+
+/*testing design from here on*/
+
+body{
+    background: #0F1A1D;
+    color: #EDEBE4;
+    font-family: 'Inter', sans-serif;
+}
+
+#tt{
+    border: 1px solid #474843;
+    border-collapse: collapse;
+}
+
+#tt th,
+#tt td{
+    border: 1px solid #474843;
+    padding: 15px;
+    text-align: center;
+}
+
+#tt td:not(.unglow):not(.disabled):not(.selected):hover {
+    background-color: #1c2620;
+    border-color: #f1aa03;
+    cursor: pointer;
+}
+
+#tt td.selected:hover {
+    background-color: #d99204;
+    cursor: pointer;
+}
+
+#table-div{
+    display:flex;
+    justify-content: center;
 }
